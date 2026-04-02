@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Upload Admin Console</title>
+    <style>
+        body { font-family: Arial; margin:40px; }
+        button { margin:5px; padding:8px 12px; }
+        input { margin:5px; padding:6px; width:300px; }
+        pre { background:#111; color:#0f0; padding:15px; max-height:300px; overflow:auto; }
+        .box { border:1px solid #ccc; padding:15px; margin-bottom:20px; }
+    </style>
+</head>
+<body>
+
+<h2>Video Upload Admin Console</h2>
+
+<div class="box">
+<h3>Create Upload Session</h3>
+<input id="title" placeholder="Title" value="Test Video"/>
+<input id="fileName" placeholder="File Name" value="video.mp4"/>
+<input id="fileSize" placeholder="File Size Bytes" value="123456"/>
+<br>
+<button onclick="createUpload()">Create Upload</button>
+</div>
+
+<div class="box">
+<h3>Upload File</h3>
+<input type="file" id="fileInput"/>
+<button onclick="uploadFile()">Upload File</button>
+<button onclick="fakeUpload()">DEV Fake Upload</button>
+</div>
+
+<div class="box">
+<h3>Complete Upload</h3>
+<button onclick="completeUpload()">Complete Upload</button>
+</div>
+
+<div class="box">
+<h3>Session</h3>
+<button onclick="loadSession()">Refresh Session</button>
+</div>
+
+<div class="box">
+<h3>Retry</h3>
+<button onclick="retryUpload()">Retry Ingest</button>
+</div>
+
+<div class="box">
+<h3>Callback Simulator (DEV Only)</h3>
+<button onclick="callbackSuccess()">Simulate SUCCESS</button>
+<button onclick="callbackFailed()">Simulate FAILED</button>
+</div>
+
+<h3>Console</h3>
+<pre id="output"></pre>
+
+<script>
+
+const TOKEN = "Bearer dev-admin-token";
+const BASE_URL = "/video-upload/v1/v1";
+
+let SESSION_ID = null;
+let SIGNED_UPLOAD_URL = null;
+let CURRENT_JOB_ID = null;
+
+function log(data){
+    document.getElementById("output").textContent =
+        JSON.stringify(data,null,2);
+}
+
+async function createUpload(){
+
+    const res = await fetch(`${BASE_URL}/uploads`,{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json",
+            "Authorization":TOKEN
+        },
+        body:JSON.stringify({
+            created_by_user_id:"admin1",
+            source_surface:"admin_tool",
+            file_name:document.getElementById("fileName").value,
+            file_size_bytes:Number(document.getElementById("fileSize").value),
+            content_type:"video/mp4",
+            metadata:{
+                title:document.getElementById("title").value,
+                content_type:"video",
+                language:"en"
+            }
+        })
+    });
+
+    const data = await res.json();
+    SESSION_ID = data.session_id;
+    SIGNED_UPLOAD_URL = data.upload_url;
+    log(data);
+}
+
+async function uploadFile(){
+
+    if(!SIGNED_UPLOAD_URL){
+        alert("Create upload first");
+        return;
+    }
+
+    const file = document.getElementById("fileInput").files[0];
+    if(!file){
+        alert("Choose file");
+        return;
+    }
+
+    if(SIGNED_UPLOAD_URL.includes("fake-upload-url")){
+        alert("DEV mode detected. Use DEV Fake Upload button.");
+        return;
+    }
+
+    await fetch(SIGNED_UPLOAD_URL,{
+        method:"PUT",
+        headers:{ "Content-Type": file.type },
+        body:file
+    });
+
+    log({upload:"File uploaded to signed URL"});
+}
+
+async function fakeUpload(){
+
+    if(!SESSION_ID){
+        alert("Create upload first");
+        return;
+    }
+
+    const file = document.getElementById("fileInput").files[0];
+    if(!file){
+        alert("Choose file");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch(`${BASE_URL.replace("/v1","")}/dev/fake-upload/${SESSION_ID}`,{
+        method:"PUT",
+        headers:{ "Authorization":TOKEN },
+        body:formData
+    });
+
+    log(await res.json());
+}
+
+async function completeUpload(){
+
+    const res = await fetch(`${BASE_URL}/uploads/${SESSION_ID}/complete`,{
+        method:"POST",
+        headers:{ "Authorization":TOKEN }
+    });
+
+    log(await res.json());
+}
+
+async function loadSession(){
+
+    const res = await fetch(`${BASE_URL}/uploads/${SESSION_ID}`,{
+        headers:{ "Authorization":TOKEN }
+    });
+
+    const data = await res.json();
+
+    if(data?.brightcove?.job_id){
+        CURRENT_JOB_ID = data.brightcove.job_id;
+    }
+
+    log(data);
+}
+
+async function retryUpload(){
+
+    const res = await fetch(`${BASE_URL}/uploads/${SESSION_ID}/retry`,{
+        method:"POST",
+        headers:{ "Authorization":TOKEN }
+    });
+
+    log(await res.json());
+}
+
+async function callbackSuccess(){
+
+    if(!CURRENT_JOB_ID){
+        alert("Refresh/ Load session to get Job ID first");
+        return;
+    }
+
+    const payload = {
+        jobId: CURRENT_JOB_ID,
+        status: "SUCCESS"
+    };
+
+    const res = await fetch(`${BASE_URL}/brightcove/callback`,{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json",
+            "x-callback-secret":"dev_shared_secret",
+            "x-signature":"dev_placeholder_signature"
+        },
+        body: JSON.stringify(payload)
+    });
+
+    log(await res.json());
+}
+
+async function callbackFailed(){
+
+    if(!CURRENT_JOB_ID){
+        alert("Refresh/ Load session to get Job ID first");
+        return;
+    }
+
+    const payload = {
+        jobId: CURRENT_JOB_ID,
+        status: "FAILED"
+    };
+
+    const res = await fetch(`${BASE_URL}/brightcove/callback`,{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json",
+            "x-callback-secret":"dev_shared_secret",
+            "x-signature":"dev_placeholder_signature"
+        },
+        body: JSON.stringify(payload)
+    });
+
+    log(await res.json());
+}
+
+</script>
+</body>
+</html>

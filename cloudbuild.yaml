@@ -1,0 +1,17 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker:latest'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/bitbucket/fm_api_services:latest', '.']
+  - name: 'gcr.io/cloud-builders/docker:latest'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/bitbucket/fm_api_services:latest']
+  - name: 'gcr.io/cloud-builders/gcloud:latest'
+    args: ['run', 'deploy', 'fm-api-services',
+            '--region=us-central1',
+            '--image=us-central1-docker.pkg.dev/$PROJECT_ID/bitbucket/fm_api_services:latest',
+            '--port=8000',
+            '--allow-unauthenticated',
+            '--service-account=$PROJECT_ID-cloud-build@$PROJECT_ID.iam.gserviceaccount.com',
+            '--ingress=internal-and-cloud-load-balancing']
+
+serviceAccount: $PROJECT_ID-cloud-build@$PROJECT_ID.iam.gserviceaccount.com
+options:
+  logging: CLOUD_LOGGING_ONLY

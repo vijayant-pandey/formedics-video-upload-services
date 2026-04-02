@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Formedics API Resources</title>
+        <style>
+            /* Base reset and font */
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: "Roboto", "Segoe UI", system-ui, sans-serif;
+            }
+
+            body {
+                background-color: #fafafa;
+                min-height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: #2e2e2e;
+            }
+
+            .container{
+                background: white;
+                padding: 2.5rem 3rem;
+                border-radius: 1rem;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+                text-align: center;
+                max-width: 480px;
+                width: 90%;
+                border-top: 5px solid #009688;
+            }
+
+            h1 {
+                font-size: 1.7rem;
+                font-weight: 600;
+                margin-bottom: 2rem;
+                color: #009688;
+                letter-spacing: -0.3px;
+            }
+
+            .links {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .link-card {
+                text-align: left;
+                background: #f9f9f9;
+                padding: 1rem 1.25rem;
+                border-radius: 0.75rem;
+                border: 1px solid #e0e0e0;
+                transition: all 0.25s ease;
+            }
+
+            .link-card:hover {
+                background: #f1fdfb;
+                border-color: #00bfa5;
+                box-shadow: 0 4px 10px rgba(0, 150, 136, 0.15);
+                transform: translateY(-2px);
+            }
+
+            .link-card span {
+                display: inline-block;
+                text-decoration: none;
+                color: #009688;
+                font-weight: 600;
+                font-size: 1.05rem;
+                margin-bottom: 0.35rem;
+                transition: color 0.2s ease;
+            }
+
+            a {
+                text-decoration: none;
+            }
+
+            .link-card p {
+                margin: 0;
+                color: #555;
+                font-size: 0.9rem;
+                line-height: 1.4;
+            }
+
+            /* Dark mode */
+            @media (prefers-color-scheme: dark) {
+                body {
+                    background-color: #1e1e1e;
+                    color: #eee;
+                }
+
+                .container {
+                    background: #2b2b2b;
+                    border-top: 5px solid #00bfa5;
+                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+                }
+
+                .link-card {
+                    background: #343434;
+                    border-color: #444;
+                }
+
+                .link-card:hover {
+                    background: #2e3d3b;
+                    border-color: #00bfa5;
+                }
+
+                .link-card span {
+                    color: #00bfa5;
+                }
+
+                .link-card p {
+                    color: #ccc;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Formedics API Resources</h1>
+            <div class="links">
+                <a href="/ai/v{{ai}}/docs" target="_blank">
+                    <div class="link-card" target="_blank">
+                        <span>AI API Endpoints</span>
+                        <p>Endpoints to help with simple AI tasks such as generating subject lines or summarizing content.</p>
+                    </div>
+                </a>
+
+                <a href="/external/v{{external}}/docs" target="_blank">
+                    <div class="link-card">
+                        <span>External APIs</span>
+                        <p>Endpoints triggered by external sources such as HubSpot, Boostr, GAM, etc.</p>
+                    </div>
+                </a>
+
+                <a href="/internal/v{{internal}}/docs" target="_blank">
+                    <div class="link-card">
+                        <span>Internal API Endpoints</span>
+                        <p>Utility API endpoints used internally by O&O sites.</p>
+                    </div>
+                </a>
+
+                <a href="/iterable/v{{iterable}}/docs" target="_blank">
+                    <div class="link-card">
+                        <span>Iterable Datafeed API Endpoints</span>
+                        <p>Datafeed endpoints for use in Iterable for campaign sends, email content, sponsored content, etc.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+    </body>
+</html>
